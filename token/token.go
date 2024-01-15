@@ -6,6 +6,9 @@ type Token struct {
 	Type    TokenType
 	Literal string
 }
+type testing struct {
+	name string
+}
 
 const (
 	ILLEGAL = "ILLEGAL"
