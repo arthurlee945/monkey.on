@@ -2,18 +2,20 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/user"
+
+	"github.com/arthurlee945/monkey.on/repl"
 )
 
-func testingFunc(val *int) *int {
-	fmt.Printf("%v : is where original int passed was pointing at value of %v\n", val, *val)
-	randint := 5095328
-	val = &randint
-	return val
-}
-
 func main() {
-	fmt.Println("Hello World?")
-	testint := 1994
-	var newVal = testingFunc(&testint)
-	fmt.Printf("%v : is where original int passed was pointing at value of %v\n", newVal, *newVal)
+	user, err := user.Current()
+
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Monkey.on is read to Monkeying %s!\n", user.Username)
+	fmt.Printf("Start type in commands:\n\n")
+
+	repl.Start(os.Stdin, os.Stdout)
 }

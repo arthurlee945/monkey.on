@@ -6,9 +6,6 @@ type Token struct {
 	Type    TokenType
 	Literal string
 }
-type testing struct {
-	name string
-}
 
 const (
 	ILLEGAL = "ILLEGAL"
@@ -19,8 +16,17 @@ const (
 	INT   = "INT"   //1,2,3 ...
 
 	//OPERATOR
-	ASSIGN = "="
-	PLUS   = "+"
+	ASSIGN   = "="
+	PLUS     = "+"
+	MINUS    = "-"
+	BANG     = "!"
+	ASTERISK = "*"
+	SLASH    = "/"
+
+	LT     = "<"
+	GT     = ">"
+	EQ     = "=="
+	NOT_EQ = "!="
 
 	//Delimiter
 	COMMA     = ","
@@ -32,6 +38,30 @@ const (
 	RBRACE = "}"
 
 	//Keywords
-	FUNCTION = "fUNCTION"
+	FUNCTION = "FUNCTION"
 	LET      = "LET"
+	TRUE     = "TRUE"
+	FALSE    = "FALSE"
+	IF       = "IF"
+	ELSEIF   = "ELSEIF"
+	ELSE     = "ELSE"
+	RETURN   = "RETURN"
 )
+
+var keywords = map[string]TokenType{
+	"fn":     FUNCTION,
+	"let":    LET,
+	"true":   TRUE,
+	"false":  FALSE,
+	"if":     IF,
+	"elseif": ELSEIF,
+	"else":   ELSE,
+	"return": RETURN,
+}
+
+func LookupIndentifier(ident string) TokenType {
+	if tok, ok := keywords[ident]; ok {
+		return tok
+	}
+	return IDENT
+}
