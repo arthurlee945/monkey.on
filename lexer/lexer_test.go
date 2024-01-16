@@ -33,6 +33,8 @@ func TestNextToken(t *testing.T) {
 	
 	10 == 10;
 	8 != 10;
+
+	let ff = 9.32;
 	`
 
 	//tests := []struct{expectedType token.TokenType expectedLiteral string}
@@ -131,6 +133,12 @@ func TestNextToken(t *testing.T) {
 		{token.INT, "8"},
 		{token.NOT_EQ, "!="},
 		{token.INT, "10"},
+		{token.SEMICOLON, ";"},
+
+		{token.LET, "let"},
+		{token.IDENT, "ff"},
+		{token.ASSIGN, "="},
+		{token.FLOAT, "9.32"},
 		{token.SEMICOLON, ";"},
 
 		{token.EOF, ""},

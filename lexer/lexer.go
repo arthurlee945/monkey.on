@@ -1,6 +1,8 @@
 package lexer
 
 import (
+	"strings"
+
 	"github.com/arthurlee945/monkey.on/token"
 )
 
@@ -41,9 +43,9 @@ func (l *Lexer) skipWhiteSpace() {
 	}
 }
 
-func (l *Lexer) readInput(checker func(byte) bool) string {
+func (l *Lexer) readInput(checker func() bool) string {
 	initPos := l.position
-	for checker(l.ch) {
+	for checker() {
 		l.readChar()
 	}
 	return l.input[initPos:l.position]
@@ -97,13 +99,17 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Literal = ""
 		tok.Type = token.EOF
 	default:
-		if isLetter(l.ch) {
-			tok.Literal = l.readInput(isLetter)
+		if l.isLetter() {
+			tok.Literal = l.readInput(l.isLetter)
 			tok.Type = token.LookupIndentifier(tok.Literal)
 			return tok
-		} else if isDigit(l.ch) {
-			tok.Type = token.INT
-			tok.Literal = l.readInput(isDigit)
+		} else if l.isNumber() {
+			tok.Literal = l.readInput(l.isNumber)
+			if strings.Contains(tok.Literal, ".") {
+				tok.Type = token.FLOAT
+			} else {
+				tok.Type = token.INT
+			}
 			return tok
 		} else {
 			tok = newToken(token.ILLEGAL, l.ch)
@@ -113,12 +119,12 @@ func (l *Lexer) NextToken() token.Token {
 	return tok
 }
 
-func isLetter(ch byte) bool {
-	return ('a' <= ch && 'z' >= ch) || ('A' <= ch && 'Z' >= ch) || ch == '_'
+func (l *Lexer) isLetter() bool {
+	return ('a' <= l.ch && 'z' >= l.ch) || ('A' <= l.ch && 'Z' >= l.ch) || l.ch == '_'
 }
 
-func isDigit(ch byte) bool {
-	return '0' <= ch && ch <= '9'
+func (l *Lexer) isNumber() bool {
+	return '0' <= l.ch && l.ch <= '9' || l.ch == '.' && '0' <= l.peekChar() && l.peekChar() <= '9'
 }
 
 func newToken(tokenType token.TokenType, ch byte) token.Token {
