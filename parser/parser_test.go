@@ -94,6 +94,12 @@ func TestReturnStatement(t *testing.T) {
 		}
 	}
 }
+
+// IDENTIFIER TEST
+
+func TestIdentifierExpression(t *testing.T) {
+
+}
 func checkParserErros(t *testing.T, p *Parser) {
 	errors := p.Errors()
 	if len(errors) == 0 {
