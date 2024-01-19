@@ -22,7 +22,8 @@ func TestString(t *testing.T) {
 			},
 		},
 	}
-	if program.String() != "let momonkey = apenation" {
+
+	if program.String() != "let momonkey = apenation;" {
 		t.Errorf("program.String() is wrong. got=%q", program.String())
 	}
 }
