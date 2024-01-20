@@ -235,6 +235,111 @@ func testParsingPrefixExpressions[T int64 | float64](t *testing.T, pt []PrefixTe
 		}
 	}
 }
+
+func TestParsingInfixExpression(t *testing.T) {
+	infixTests := []struct {
+		input      string
+		leftValue  int64
+		operator   string
+		rightValue int64
+	}{
+		{"8 + 8", 8, "+", 8},
+		{"8 - 8", 8, "-", 8},
+		{"8 * 8", 8, "*", 8},
+		{"8 / 8", 8, "/", 8},
+		{"8 % 8", 8, "%", 8},
+		{"8 > 8", 8, ">", 8},
+		{"8 < 8", 8, "<", 8},
+		{"8 != 8", 8, "!=", 8},
+		{"8 == 8", 8, "==", 8},
+	}
+
+	for _, tt := range infixTests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+
+		checkParserErrors(t, p)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain %d statements. got=%d\n", 1, len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statments[0] id not ast.ExpressionStatement. got=%T", program.Statements[0])
+		}
+
+		exp, ok := stmt.Expression.(*ast.InfixExpression)
+		if !ok {
+			t.Fatalf("exp is not ast.InfixExpression, got=%T", stmt.Expression)
+		}
+
+		if !testNumberLiteral[int64](t, exp.Left, tt.leftValue) {
+			return
+		}
+
+		if exp.Operator != tt.operator {
+			t.Fatalf("exp.Operator is not %q, got=%q", tt.operator, exp.Operator)
+		}
+
+		if !testNumberLiteral[int64](t, exp.Right, tt.rightValue) {
+			return
+		}
+
+	}
+}
+
+func TestOperatorPrecedenceParsing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"-a * b", "((-a) * b)"},
+		{"!-a", "(!(-a))"},
+		{"a + b + c", "((a + b) + c)"},
+		{"-a + b % 5 ", "((-a) + (b % 5))"},
+		{"a + b - c", "((a + b) - c)"},
+		{"a * b * c", "((a * b) * c)"},
+		{"a * b / c", "((a * b) / c)"},
+		{"a * b % c", "(a * (b % c))"},
+		{"a + b / c", "(a + (b / c))"},
+		{"a + b * c % 5 / d + e - c", "(((a + ((b * (c % 5)) / d)) + e) - c)"},
+		{"3 + 6; -25 * 6 % 3", "(3 + 6)((-25) * (6 % 3))"},
+		{"5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"},
+		{"5 < 12 != !a > 5", "((5 < 12) != ((!a) > 5))"},
+		{"3 + 4 * 5 == 3 * 1 + 4 % 2 % 2", "((3 + (4 * 5)) == ((3 * 1) + ((4 % 2) % 2)))"},
+		{"3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		actual := program.String()
+
+		if actual != tt.expected {
+			t.Errorf("exptected=%q, got=%q", tt.expected, actual)
+		}
+	}
+}
+
+// UTILITY
+func checkParserErrors(t *testing.T, p *Parser) {
+	errors := p.Errors()
+	if len(errors) == 0 {
+		return
+	}
+
+	t.Errorf("parser encountered %d errors", len(errors))
+	for _, err := range errors {
+		t.Errorf("parser error: %q", err)
+	}
+
+	t.FailNow()
+}
 func testNumberLiteral[T int64 | float64](t *testing.T, nl ast.Expression, value T) bool {
 	var num ast.Expression
 	var okNum bool
@@ -270,20 +375,4 @@ func testNumberLiteral[T int64 | float64](t *testing.T, nl ast.Expression, value
 	}
 
 	return true
-
-}
-
-// UTILITY
-func checkParserErrors(t *testing.T, p *Parser) {
-	errors := p.Errors()
-	if len(errors) == 0 {
-		return
-	}
-
-	t.Errorf("parser encountered %d errors", len(errors))
-	for _, err := range errors {
-		t.Errorf("parser error: %q", err)
-	}
-
-	t.FailNow()
 }
