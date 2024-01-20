@@ -64,5 +64,6 @@ func LookupIndentifier(ident string) TokenType {
 	if tok, ok := keywords[ident]; ok {
 		return tok
 	}
+
 	return IDENT
 }
