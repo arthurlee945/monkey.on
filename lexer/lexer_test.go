@@ -25,8 +25,6 @@ func TestNextToken(t *testing.T) {
 
 	if (5 < 10){
 		return true;
-	}elseif(7 > 3){
-		result = 88;
 	}else{
 		return false;
 	}
@@ -103,19 +101,6 @@ func TestNextToken(t *testing.T) {
 		{token.LBRACE, "{"},
 		{token.RETURN, "return"},
 		{token.TRUE, "true"},
-		{token.SEMICOLON, ";"},
-		{token.RBRACE, "}"},
-
-		{token.ELSEIF, "elseif"},
-		{token.LPAREN, "("},
-		{token.INT, "7"},
-		{token.GT, ">"},
-		{token.INT, "3"},
-		{token.RPAREN, ")"},
-		{token.LBRACE, "{"},
-		{token.IDENT, "result"},
-		{token.ASSIGN, "="},
-		{token.INT, "88"},
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
 

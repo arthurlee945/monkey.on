@@ -12,6 +12,17 @@ import (
 
 const PROMPT = ">>"
 
+const MONKEY = `
+	 __
+    w  c(..)o   (
+     \__(-)    __)
+	 /\   (
+	/(_)___)
+	w /|
+	 | \
+        m  m
+`
+
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 
@@ -50,9 +61,21 @@ func StartParser(in io.Reader, out io.Writer) {
 		p := parser.New(l)
 		program := p.ParseProgram()
 
-		for _, stmt := range program.Statements {
-			fmt.Printf("%+v\n", stmt.String())
+		if len(p.Errors()) != 0 {
+			printParseErrors(out, p.Errors())
+			continue
 		}
 
+		io.WriteString(out, program.String())
+		io.WriteString(out, "\n")
+	}
+}
+
+func printParseErrors(out io.Writer, errors []string) {
+	io.WriteString(out, MONKEY)
+	io.WriteString(out, "WOOps! we ran into some goof and gaff!\n")
+	io.WriteString(out, " parser erros:\n")
+	for _, msg := range errors {
+		io.WriteString(out, "\t"+msg+"\n")
 	}
 }
