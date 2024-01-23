@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/arthurlee945/monkey.on/evaluator"
 	"github.com/arthurlee945/monkey.on/lexer"
 	"github.com/arthurlee945/monkey.on/parser"
 	"github.com/arthurlee945/monkey.on/token"
@@ -68,6 +69,36 @@ func StartParser(in io.Reader, out io.Writer) {
 
 		io.WriteString(out, program.String())
 		io.WriteString(out, "\n")
+	}
+}
+
+func StartEvaluator(in io.Reader, out io.Writer) {
+	scanner := bufio.NewScanner(in)
+
+	for {
+		fmt.Print(PROMPT)
+		scanned := scanner.Scan()
+
+		if !scanned {
+			return
+		}
+
+		line := scanner.Text()
+
+		l := lexer.New(line)
+		p := parser.New(l)
+		program := p.ParseProgram()
+
+		if len(p.Errors()) != 0 {
+			printParseErrors(out, p.Errors())
+			continue
+		}
+
+		evaluated := evaluator.Eval(program)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
+		}
 	}
 }
 

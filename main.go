@@ -19,5 +19,6 @@ func main() {
 	fmt.Printf("Start type in commands:\n\n")
 
 	// repl.Start(os.Stdin, os.Stdout)
-	repl.StartParser(os.Stdin, os.Stdout)
+	// repl.StartParser(os.Stdin, os.Stdout)
+	repl.StartEvaluator(os.Stdin, os.Stdout)
 }
