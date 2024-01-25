@@ -137,12 +137,113 @@ func TestIfElseExpressions(t *testing.T) {
 	}
 }
 
+func TestReturnExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"return 10;", 10},
+		{"return 25; 124;", 25},
+		{"return 2 * 5 / 2; 9;", 5},
+		{"9 + 9; return 3 * 5; -19;", 15},
+		{`
+		if (10 > 1) {
+			if (10 > 1) {
+				return 10;
+			}
+			return 1;
+		}	
+		`, 10},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testIntegerObject(t, evaluated, tt.expected)
+	}
+}
+func TestLetStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let x = 5; x;", 5},
+		{"let a = 5 * 5; a;", 25},
+		{"let a = 8; let b = a; b;", 8},
+		{"let a = 8; let b = a; a%b;", 0},
+		{"let a = 5; let b = a; let c = a + b + 25; c;", 35},
+	}
+
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+}
+
+func TestFunctionObject(t *testing.T) {
+	input := "fn(x){x+2;};"
+
+	evaluated := testEval(input)
+
+	fn, ok := evaluated.(*object.Function)
+	if !ok {
+		t.Fatalf("object is not Function. got=%T {%+v}", evaluated, evaluated)
+	}
+
+	if len(fn.Parameters) != 1 {
+		t.Fatalf("function has wrong parameters. Parameters=%v", fn.Parameters)
+	}
+
+	if fn.Parameters[0].String() != "x" {
+		t.Fatalf("parameter is not 'x'. got=%q", fn.Parameters[0])
+	}
+
+	expectedBody := "(x + 2)"
+	if fn.Body.String() != expectedBody {
+		t.Fatalf("body is not %q. got=%q", expectedBody, fn.Body.String())
+	}
+}
+
+func TestErrorHandling(t *testing.T) {
+	tests := []struct {
+		input           string
+		expectedMessage string
+	}{
+		{"5 + true", "type mismatch: INTEGER + BOOLEAN"},
+		{"true + 5; 5;", "type mismatch: BOOLEAN + INTEGER"},
+		{"-true", "unknown operator: -BOOLEAN"},
+		{"true + false", "unknown operator: BOOLEAN + BOOLEAN"},
+		{"5; true + false; 5", "unknown operator: BOOLEAN + BOOLEAN"},
+		{"if( 10 > 1) {true + false}", "unknown operator: BOOLEAN + BOOLEAN"},
+		{`
+		if (10 > 1){
+			if(10 > 1){
+				return true + false
+			}
+			return 1;
+		}
+		`, "unknown operator: BOOLEAN + BOOLEAN"},
+		{"monkey", "identifier not found: monkey"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		errObj, ok := evaluated.(*object.Error)
+		if !ok {
+			t.Errorf("no error object returned. got=%T(%+v)", evaluated, evaluated)
+			continue
+		}
+		if errObj.Message != tt.expectedMessage {
+			t.Errorf("wrong error message. expected=%q, got=%q", tt.expectedMessage, errObj.Message)
+		}
+	}
+}
+
 func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
+	env := object.NewEnvironment()
 
-	return Eval(program)
+	return Eval(program, env)
 }
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {

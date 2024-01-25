@@ -7,6 +7,7 @@ import (
 
 	"github.com/arthurlee945/monkey.on/evaluator"
 	"github.com/arthurlee945/monkey.on/lexer"
+	"github.com/arthurlee945/monkey.on/object"
 	"github.com/arthurlee945/monkey.on/parser"
 	"github.com/arthurlee945/monkey.on/token"
 )
@@ -74,7 +75,7 @@ func StartParser(in io.Reader, out io.Writer) {
 
 func StartEvaluator(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
-
+	env := object.NewEnvironment()
 	for {
 		fmt.Print(PROMPT)
 		scanned := scanner.Scan()
@@ -94,7 +95,7 @@ func StartEvaluator(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		evaluated := evaluator.Eval(program)
+		evaluated := evaluator.Eval(program, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")
