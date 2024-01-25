@@ -91,15 +91,25 @@ func (f *Function) Inspect() string {
 }
 
 func NewEnvironment() *Environment {
-	return &Environment{store: make(map[string]Object)}
+	return &Environment{store: make(map[string]Object), outer: nil}
+}
+
+func NewEnclosedEnvironment(outer *Environment) *Environment {
+	env := &Environment{store: make(map[string]Object)}
+	env.outer = outer
+	return env
 }
 
 type Environment struct {
 	store map[string]Object
+	outer *Environment
 }
 
 func (ev *Environment) Get(name string) (Object, bool) {
 	obj, ok := ev.store[name]
+	if !ok && ev.outer != nil {
+		obj, ok = ev.outer.Get(name)
+	}
 	return obj, ok
 }
 func (ev *Environment) Set(name string, val Object) Object {

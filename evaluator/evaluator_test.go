@@ -202,6 +202,38 @@ func TestFunctionObject(t *testing.T) {
 	}
 }
 
+func TestFunctionApplication(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let ident = fn(x){x;}; ident(5);", 5},
+		{"let ident = fn(y){return y;}; ident(8);", 8},
+		{"let double = fn(x){ x * 2; }; double(8);", 16},
+		{"let add = fn(x, y){x + y; }; add(1, 7)", 8},
+		{"let add = fn(x, y){ return x + y;}; add(1, add(5, 10))", 16},
+		{"let w = 5; let add = fn(x, y){ return x + y + w;}; add(1, add(5, 10))", 26},
+		{"fn(x){x+2;}(5)", 7},
+	}
+
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+}
+
+func TestClosures(t *testing.T) {
+	input := `
+	let newExtender = fn(x){
+		fn(y){x + y}
+	}
+
+	let addEight = newExtender(8)
+	addEight(10)
+	`
+
+	testIntegerObject(t, testEval(input), 18)
+}
+
 func TestErrorHandling(t *testing.T) {
 	tests := []struct {
 		input           string
