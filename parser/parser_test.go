@@ -183,6 +183,25 @@ func TestParsingArrayLiteral(t *testing.T) {
 	}
 }
 
+// INDEX EXP TEST
+func TestIndexExpression(t *testing.T) {
+	input := "myMonkey[1 + 4]"
+
+	stmt := prepExpressionTest(t, input)
+	idxExp, ok := stmt.Expression.(*ast.IndexExpression)
+	if !ok {
+		t.Fatalf("exp not *ast.IndexExpression. got=%T", stmt.Expression)
+	}
+
+	if !testIdentifier(t, idxExp.Left, "myMonkey") {
+		return
+	}
+
+	if !testInfixExpression(t, idxExp.Index, 1, "+", 4) {
+		return
+	}
+}
+
 // PREFIX TEST
 func TestParsingPrefixExpressions(t *testing.T) {
 	prefixTest := []struct {
@@ -292,6 +311,9 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		{"a + add(b * c) + d", "((a + add((b * c))) + d)"},
 		{"add(a , b, 1, 35 * 2, 4 + 5 + 88 + add(3, 5 * 9), 53)", "add(a, b, 1, (35 * 2), (((4 + 5) + 88) + add(3, (5 * 9))), 53)"},
 		{"add(a + b + c * d / f + g)", "add((((a + b) + ((c * d) / f)) + g))"},
+		//INDEX EXPRESSION
+		{"a * [1, 2, 3, 4][b * c] *d", "((a * ([1, 2, 3, 4][(b * c)])) * d)"},
+		{"add(a * b[2], b[1], 2 * [2, 5][0])", "add((a * (b[2])), (b[1]), (2 * ([2, 5][0])))"},
 	}
 
 	for _, tt := range tests {

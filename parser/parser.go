@@ -20,6 +20,7 @@ const (
 	MODULO      // %
 	PREFIX      // -X or !X
 	CALL        // myFunc(x)
+	INDEX       // array[index]
 )
 
 var precedence = map[token.TokenType]int{
@@ -33,6 +34,7 @@ var precedence = map[token.TokenType]int{
 	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
 	token.LPAREN:   CALL,
+	token.LBRACKET: INDEX,
 }
 
 type (
@@ -86,6 +88,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.GT, p.parseInfixExpression)
 	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
+	p.registerInfix(token.LBRACKET, p.parseIndexExpression)
 	return p
 }
 func (p *Parser) ParseProgram() *ast.Program {
@@ -376,6 +379,19 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	return expression
 }
 
+func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
+	exp := &ast.IndexExpression{Token: p.curToken, Left: left}
+
+	p.nextToken()
+
+	exp.Index = p.parseExpression(LOWEST)
+	if !p.expectPeek(token.RBRACKET) {
+		return nil
+	}
+
+	return exp
+}
+
 func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 	exp := &ast.CallExpression{Token: p.curToken, Function: function}
 	exp.Arguments = p.parseExpressionList(token.RPAREN)
@@ -390,9 +406,9 @@ func (p *Parser) parseBlockStatment() *ast.BlockStatment {
 
 	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
 		stmt := p.parseStatment()
-		if stmt != nil {
-			block.Statements = append(block.Statements, stmt)
-		}
+		// if stmt != nil { }
+		block.Statements = append(block.Statements, stmt)
+
 		p.nextToken()
 	}
 	return block
