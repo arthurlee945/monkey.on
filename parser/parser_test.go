@@ -141,6 +141,48 @@ func TestFloatLiteralExpression(t *testing.T) {
 	}
 }
 
+// STRING LITERAL TEST
+func TestStringLiteralExpression(t *testing.T) {
+	input := `"monkey world"`
+
+	stmt := prepExpressionTest(t, input)
+	literal, ok := stmt.Expression.(*ast.StringLiteral)
+	if !ok {
+		t.Fatalf("exp not *ast.StringLiteral. got=%T", stmt.Expression)
+	}
+
+	if literal.Value != "monkey world" {
+		t.Fatalf("literal.Value is not %q. got=%q", "monkey world", literal.Value)
+	}
+
+}
+
+// ARRAY PARSE TEST
+func TestParsingArrayLiteral(t *testing.T) {
+	input := `[1,  6 * 2,  6 - 2, "monkey"]`
+
+	stmt := prepExpressionTest(t, input)
+	array, ok := stmt.Expression.(*ast.ArrayLiteral)
+	if !ok {
+		t.Fatalf("exp not ast.ArrayLiteral. got=%T", stmt.Expression)
+	}
+	if len(array.Elements) != 4 {
+		t.Fatalf("len(array.Elements) not 4. got=%d", len(array.Elements))
+	}
+	testNumberLiteral[int64](t, array.Elements[0], 1)
+	testInfixExpression(t, array.Elements[1], 6, "*", 2)
+	testInfixExpression(t, array.Elements[2], 6, "-", 2)
+
+	str, ok := array.Elements[3].(*ast.StringLiteral)
+	if !ok {
+		t.Errorf("array.Elements[3] not ast.StringLiteral. got=%T", array.Elements[3])
+	}
+
+	if str.Value != "monkey" {
+		t.Errorf("str.Value does not match. got=%q", str.Value)
+	}
+}
+
 // PREFIX TEST
 func TestParsingPrefixExpressions(t *testing.T) {
 	prefixTest := []struct {

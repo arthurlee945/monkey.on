@@ -12,9 +12,10 @@ const (
 	EOF     = "EOF"
 
 	// Identifier + literals(Func, Var, etc...)
-	IDENT = "IDENT" //add, foo, bar...
-	INT   = "INT"   //1,2,3 ...
-	FLOAT = "FLOAT" //8.27, 2.32 ...
+	IDENT  = "IDENT"  //add, foo, bar...
+	INT    = "INT"    //1,2,3 ...
+	FLOAT  = "FLOAT"  //8.27, 2.32 ...
+	STRING = "STRING" // "monkey"
 
 	//OPERATOR
 	ASSIGN   = "="
@@ -34,10 +35,12 @@ const (
 	COMMA     = ","
 	SEMICOLON = ";"
 
-	LPAREN = "("
-	RPAREN = ")"
-	LBRACE = "{"
-	RBRACE = "}"
+	LPAREN   = "("
+	RPAREN   = ")"
+	LBRACE   = "{"
+	RBRACE   = "}"
+	LBRACKET = "["
+	RBRACKET = "]"
 
 	//Keywords
 	FUNCTION = "FUNCTION"

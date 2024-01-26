@@ -34,6 +34,9 @@ func TestNextToken(t *testing.T) {
 
 	let ff = 9.32;
 	5%5;
+	"monkey"
+	"monkey paw"
+	[1, 23];
 	`
 
 	//tests := []struct{expectedType token.TokenType expectedLiteral string}
@@ -130,6 +133,16 @@ func TestNextToken(t *testing.T) {
 		{token.INT, "5"},
 		{token.MODULO, "%"},
 		{token.INT, "5"},
+		{token.SEMICOLON, ";"},
+
+		{token.STRING, "monkey"},
+		{token.STRING, "monkey paw"},
+
+		{token.LBRACKET, "["},
+		{token.INT, "1"},
+		{token.COMMA, ","},
+		{token.INT, "23"},
+		{token.RBRACKET, "]"},
 		{token.SEMICOLON, ";"},
 
 		{token.EOF, ""},

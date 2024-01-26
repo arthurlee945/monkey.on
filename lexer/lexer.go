@@ -63,6 +63,9 @@ func (l *Lexer) NextToken() token.Token {
 	l.skipWhiteSpace()
 
 	switch l.ch {
+	case '"':
+		tok.Type = token.STRING
+		tok.Literal = l.readString()
 	//operator
 	case '=':
 		if l.peekChar() == '=' {
@@ -103,6 +106,10 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
+	case '[':
+		tok = newToken(token.LBRACKET, l.ch)
+	case ']':
+		tok = newToken(token.RBRACKET, l.ch)
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -133,6 +140,17 @@ func (l *Lexer) isLetter() bool {
 
 func (l *Lexer) isNumber() bool {
 	return '0' <= l.ch && l.ch <= '9' || l.ch == '.' && '0' <= l.peekChar() && l.peekChar() <= '9'
+}
+
+func (l *Lexer) readString() string {
+	position := l.position + 1
+	for {
+		l.readChar()
+		if l.ch == '"' || l.ch == 0 {
+			break
+		}
+	}
+	return l.input[position:l.position]
 }
 
 func newToken(tokenType token.TokenType, ch byte) token.Token {

@@ -13,12 +13,16 @@ type ObjectType string
 const (
 	INTEGER_OBJ  = "INTEGER"
 	FLOAT_OBJ    = "FLOAT"
+	STRING_OBJ   = "STRING"
 	BOOLEAN_OBJ  = "BOOLEAN"
 	NULL_OBJ     = "NULL"
 	RETURN_OBJ   = "RETURN"
 	FUNCTION_OBJ = "FUNCTION"
 	ERROR_OBJ    = "ERROR"
+	BUILTIN_OBJ  = "BUILTIN"
 )
+
+type BuiltinFunction func(args ...Object) Object
 
 type Object interface {
 	Type() ObjectType
@@ -38,6 +42,13 @@ type Float struct {
 
 func (f *Float) Type() ObjectType { return FLOAT_OBJ }
 func (f *Float) Inspect() string  { return fmt.Sprintf("%f", f.Value) }
+
+type String struct {
+	Value string
+}
+
+func (s *String) Type() ObjectType { return STRING_OBJ }
+func (s *String) Inspect() string  { return s.Value }
 
 type Boolean struct {
 	Value bool
@@ -116,3 +127,10 @@ func (ev *Environment) Set(name string, val Object) Object {
 	ev.store[name] = val
 	return val
 }
+
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }
+func (b *Builtin) Inspect() string  { return "builtin function" }
