@@ -18,3 +18,14 @@
   \_| ||        \_|  |        \_|  |        \_| ||   |  One Bored Monkey
 
 ```
+**Basic Command**
+---
+<img src="https://github.com/arthurlee945/monkey.on/blob/main/assets/monkey-lang.png?raw=true" style="border:1px solid black; border-radius:5px">
+
+**Error Handling**
+---
+<img src="https://github.com/arthurlee945/monkey.on/blob/main/assets/monkey-error.png?raw=true" style="border:1px solid black; border-radius:5px">
+
+**Interal Error**
+---
+<img src="https://github.com/arthurlee945/monkey.on/blob/main/assets/monkey-sys-error.png?raw=true" style="border:1px solid black; border-radius:5px">
