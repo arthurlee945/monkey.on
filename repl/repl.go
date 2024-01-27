@@ -105,8 +105,8 @@ func StartEvaluator(in io.Reader, out io.Writer) {
 
 func printParseErrors(out io.Writer, errors []string) {
 	io.WriteString(out, MONKEY)
-	io.WriteString(out, "WOOps! we ran into some goof and gaff!\n")
-	io.WriteString(out, " parser erros:\n")
+	io.WriteString(out, "WOOPS! we ran into some goof and gaff!\n")
+	io.WriteString(out, " parser errors:\n")
 	for _, msg := range errors {
 		io.WriteString(out, "\t"+msg+"\n")
 	}
