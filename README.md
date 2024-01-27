@@ -26,6 +26,6 @@
 ---
 <img src="https://github.com/arthurlee945/monkey.on/blob/main/assets/monkey-error.png?raw=true" style="border:1px solid black; border-radius:5px">
 
-**Interal Error**
+**Internal Error**
 ---
 <img src="https://github.com/arthurlee945/monkey.on/blob/main/assets/monkey-sys-error.png?raw=true" style="border:1px solid black; border-radius:5px">
