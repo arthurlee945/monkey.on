@@ -183,6 +183,153 @@ func TestParsingArrayLiteral(t *testing.T) {
 	}
 }
 
+// HASH(string) PARSE TEST
+func TestParsingHashLiteralsStingKeys(t *testing.T) {
+	input := `{ "one" : 1, "two" : 2,  "three" : 3}`
+
+	stmt := prepExpressionTest(t, input)
+	hash, ok := stmt.Expression.(*ast.HashLiteral)
+	if !ok {
+		t.Fatalf("exp is not ast.HashLiteral. got=%T (%+v)", stmt.Expression, stmt.Expression)
+	}
+
+	if len(hash.Pairs) != 3 {
+		t.Fatalf("hash.Paris has wrong length. got=%d", len(hash.Pairs))
+	}
+
+	expected := map[string]int64{
+		"one":   1,
+		"two":   2,
+		"three": 3,
+	}
+
+	for key, value := range hash.Pairs {
+		literal, ok := key.(*ast.StringLiteral)
+		if !ok {
+			t.Errorf("key is not ast.StringLiteral. got=%T", key)
+		}
+		expectedValue := expected[literal.String()]
+
+		testNumberLiteral[int64](t, value, expectedValue)
+	}
+}
+
+// HASH(string) PARSE TEST
+func TestParsingHashLiteralsIntKeys(t *testing.T) {
+	input := `{  1 : "one",  2: "two",   3 : "three"}`
+
+	stmt := prepExpressionTest(t, input)
+	hash, ok := stmt.Expression.(*ast.HashLiteral)
+	if !ok {
+		t.Fatalf("exp is not ast.HashLiteral. got=%T (%+v)", stmt.Expression, stmt.Expression)
+	}
+
+	if len(hash.Pairs) != 3 {
+		t.Fatalf("hash.Paris has wrong length. got=%d", len(hash.Pairs))
+	}
+
+	expected := map[int64]string{
+		1: "one",
+		2: "two",
+		3: "three",
+	}
+
+	for key, value := range hash.Pairs {
+		literal, ok := key.(*ast.IntegerLiteral)
+		if !ok {
+			t.Errorf("key is not ast.StringLiteral. got=%T", key)
+		}
+		expectedValue := expected[literal.Value]
+
+		if value.String() != expectedValue {
+			t.Errorf("value does not match %s. got=%s", expectedValue, value.String())
+		}
+	}
+}
+
+func TestParsingHashLiteralsBooleanKeys(t *testing.T) {
+	input := `{  true : 1,  false: 2}`
+
+	stmt := prepExpressionTest(t, input)
+	hash, ok := stmt.Expression.(*ast.HashLiteral)
+	if !ok {
+		t.Fatalf("exp is not ast.HashLiteral. got=%T (%+v)", stmt.Expression, stmt.Expression)
+	}
+
+	if len(hash.Pairs) != 2 {
+		t.Fatalf("hash.Paris has wrong length. got=%d", len(hash.Pairs))
+	}
+
+	expected := map[string]int64{
+		"true":  1,
+		"false": 2,
+	}
+
+	for key, value := range hash.Pairs {
+		literal, ok := key.(*ast.Boolean)
+		if !ok {
+			t.Errorf("key is not ast.StringLiteral. got=%T", key)
+		}
+		expectedValue := expected[literal.String()]
+
+		testNumberLiteral[int64](t, value, expectedValue)
+	}
+}
+
+func TestParsingHashLiteralsWithExpressions(t *testing.T) {
+	input := `{ "one" : 1 + 25, "two" : 2 * 4,  "three" : 10 / 2}`
+
+	stmt := prepExpressionTest(t, input)
+	hash, ok := stmt.Expression.(*ast.HashLiteral)
+	if !ok {
+		t.Fatalf("exp is not ast.HashLiteral. got=%T (%+v)", stmt.Expression, stmt.Expression)
+	}
+
+	if len(hash.Pairs) != 3 {
+		t.Fatalf("hash.Paris has wrong length. got=%d", len(hash.Pairs))
+	}
+
+	tests := map[string]func(ast.Expression){
+		"one": func(e ast.Expression) {
+			testInfixExpression(t, e, 1, "+", 25)
+		},
+		"two": func(e ast.Expression) {
+			testInfixExpression(t, e, 2, "*", 4)
+		},
+		"three": func(e ast.Expression) {
+			testInfixExpression(t, e, 10, "/", 2)
+		},
+	}
+
+	for key, value := range hash.Pairs {
+		literal, ok := key.(*ast.StringLiteral)
+		if !ok {
+			t.Errorf("key is not ast.StringLiteral. got=%T", key)
+			continue
+		}
+		testFunc, ok := tests[literal.String()]
+		if !ok {
+			t.Errorf("No test function for key %q found", literal.String())
+		}
+		testFunc(value)
+	}
+}
+
+// EMPTY HASH PARSE
+func TestParsingEmptyHashLiteral(t *testing.T) {
+	input := "{}"
+
+	stmt := prepExpressionTest(t, input)
+	hash, ok := stmt.Expression.(*ast.HashLiteral)
+	if !ok {
+		t.Fatalf("exp is not ast.HashLiteral. got=%T (%+v)", stmt.Expression, stmt.Expression)
+	}
+
+	if len(hash.Pairs) != 0 {
+		t.Fatalf("hash.Paris has wrong length. got=%d", len(hash.Pairs))
+	}
+}
+
 // INDEX EXP TEST
 func TestIndexExpression(t *testing.T) {
 	input := "myMonkey[1 + 4]"

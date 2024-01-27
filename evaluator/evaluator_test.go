@@ -369,6 +369,7 @@ func TestErrorHandling(t *testing.T) {
 		`, "unknown operator: BOOLEAN + BOOLEAN"},
 		{"monkey", "identifier not found: monkey"},
 		{`"Hello" - "World"`, "unknown operator: STRING - STRING"},
+		{`{"name" : "Monkey" }[fn(x){x}];`, "unusable as hash key: FUNCTION"},
 	}
 
 	for _, tt := range tests {
@@ -384,6 +385,70 @@ func TestErrorHandling(t *testing.T) {
 	}
 }
 
+func TestHashLiteral(t *testing.T) {
+	input := `let two = "two";
+	{
+		"one": 10 - 9,
+		two: 1 + 1,
+		"thr" + "ee" : 6 / 2,
+		4 : 4,
+		true: 5,
+		false: 6
+	}
+	`
+
+	evaluated := testEval(input)
+	result, ok := evaluated.(*object.Hash)
+	if !ok {
+		t.Fatalf("Eval didn't return Hash. got=%T (%+v)", evaluated, evaluated)
+	}
+
+	expected := map[object.HashKey]int64{
+		(&object.String{Value: "one"}).HashKey():   1,
+		(&object.String{Value: "two"}).HashKey():   2,
+		(&object.String{Value: "three"}).HashKey(): 3,
+		(&object.Integer{Value: 4}).HashKey():      4,
+		(&object.Boolean{Value: true}).HashKey():   5,
+		(&object.Boolean{Value: false}).HashKey():  6,
+	}
+
+	if len(expected) != len(result.Pairs) {
+		t.Fatalf("Hash has wrong num of pairs. got=%d", len(result.Pairs))
+	}
+	for expectedKey, expectedValue := range expected {
+		pair, ok := result.Pairs[expectedKey]
+		if !ok {
+			t.Errorf("no pair for given key in Pairs")
+		}
+
+		testIntegerObject(t, pair.Value, expectedValue)
+	}
+}
+
+func TestHashIndexExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`{"foo": 5}["foo"]`, 5},
+		{`{"foo": 10}["bar"]`, nil},
+		{`let key = "monkey"; {"monkey": 8}[key]`, 8},
+		{`{}["paw"]`, nil},
+		{`{5 : 5}[5]`, 5},
+		{`{true: 10}[true]`, 10},
+		{`{false: 65}[false]`, 65},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		integer, ok := tt.expected.(int)
+		if ok {
+			testIntegerObject(t, evaluated, int64(integer))
+		} else {
+			testNullObject(t, evaluated)
+		}
+	}
+}
 func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
@@ -392,7 +457,6 @@ func testEval(input string) object.Object {
 
 	return Eval(program, env)
 }
-
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 	result, ok := obj.(*object.Integer)
 	if !ok {
